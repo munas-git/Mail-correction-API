@@ -1,12 +1,12 @@
 import ssl
 import smtplib
-from config import setting
+from config import setting # Comment this out before production.
 from email.message import EmailMessage
 from email.utils import formataddr
 
 
-sender_email = setting.sender
-password = setting.password
+sender_email = setting.sender # Comment this out before production.
+password = setting.password # Comment this out before production.
 
 
 class Mail():
@@ -86,8 +86,8 @@ class Mail():
             # Attempt to login.
             try:
                 smtp.login(self.senders_email, self.senders_password)
-                message = "login complete: True"
                 # Attempt to send email.
+                message = "login complete: True"
                 try:
                     smtp.sendmail(self.senders_email, self.receivers_email, self.mail_cont.as_string())
                     message = "mail sent: True"   
@@ -98,8 +98,11 @@ class Mail():
         
         return(message)
 
+
 if __name__ == "__main__":
     content = "Hello Abramam, how are you doing today?\n This is a test for AutoBatch system."
-    mail = Mail("AutoBatch", "einsteinmunachiso@gmail.com", "abrahamogudu@gmail.com", "AutoBatch Test", content, 'google')
-    mail.define_mail()
-    mail.send_mail()
+    mail = Mail("AutoBatch", "einsteinmunachiso@gmail.com",password, "abrahamogudu@gmail.com", "AutoBatch Test", content, 'google')
+    mail_define = mail.define_mail()
+    print(mail_define)
+    send_mail = mail.send_mail()
+    print(send_mail)
