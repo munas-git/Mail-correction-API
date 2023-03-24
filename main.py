@@ -3,13 +3,26 @@ import smtplib
 from config import setting # Comment this out before production.
 from email.message import EmailMessage
 from email.utils import formataddr
+from difflib import SequenceMatcher
 
 
-sender_email = setting.sender # Comment this out before production.
-password = setting.password # Comment this out before production.
-
+# Comment these out before production.
+sender_email = setting.sender 
+password = setting.password
+tlds = ['net', 'com', 'org', 'io', 'co', 'uk', 'ca', 'dev', 'me']
+mail_servers = ['outlook', 'gmail', 'icloud', 'yahoo', 'hotmail', 'aim', 'titan', 'protonmail', 'pm', 'zoho', 'yandex', 'gmx', 'hubspot', 'mail', 'tutanota']
 
 class Mail():
+    
+    '''
+        Class to send email to individuals.
+            Inputs: 
+                senders_name (str) : The name of the emails sender i.e individual or organization name.
+                senders_email (str) : The email of the sender i.e individual or organizations email.
+                senders_password (str) : The password of the email sender.
+                mail_subject (str) : The subject/title of the email.
+                senders_email_domain (str) : This usually falls after the @ symbol i.e: google, outlook, e.t.c
+        '''
     
     def __init__(self,
                 senders_name:str,
@@ -19,15 +32,6 @@ class Mail():
                 senders_email_domain:str
             ) -> None:
         
-        '''
-        Class to send email to individuals.
-            Inputs: 
-                senders_name (str) : The name of the emails sender i.e individual or organization name.
-                senders_email (str) : The email of the sender i.e individual or organizations email.
-                senders_password (str) : The password of the email sender.
-                mail_subject (str) : The subject/title of the email.
-                senders_email_domain (str) : This usually falls after the @ symbol i.e: google, outlook, e.t.c
-        '''
 
         self.senders_name = senders_name
         self.senders_email = senders_email
@@ -50,8 +54,7 @@ class Mail():
         # Setting email parameters
         self.mail_cont["Subject"] = self.mail_subject
         self.mail_cont["From"] = formataddr((f"{self.senders_name}", f"{self.senders_email}"))
-        self.mail_cont["BCC"] = self.senders_email
-
+        # self.mail_cont["BCC"] = self.senders_email
 
         message = 'Mail definition status: True'
         return(message)
@@ -65,11 +68,9 @@ class Mail():
                 mail_content (str) : The content of the email.
                 with_analytics (bool), default = False : This is used to tell the function if it should return information about how many mails were sent succesfully or not.
             Output: login/mail status.
-
-
         '''
         # Adding receivers email and mail content to mail content build.
-        self.mail_cont["To"] = ", ".join(receivers_emails)
+        self.mail_cont["BCC"] = ", ".join(receivers_emails)
         self.mail_cont.set_content(mail_content)
 
         # Security
@@ -140,6 +141,8 @@ class Mail():
 
         # if with_analytics == True
         with smtplib.SMTP_SSL(server, port, context= self.context) as smtp:
+            # smtp.ehlo()  # send the extended hello to our server
+            # smtp.starttls()  # tell server we want to communicate with TLS encryption
             # Attempt to login.
             try:
                 smtp.login(self.senders_email, self.senders_password)
@@ -159,16 +162,76 @@ class Mail():
         return(message)
     
 
-    # def mail_status_analytics():
+class mailCorrection():
+
+    """
+    This class handles all activities related to mail correction attempts.
+    From basic attempts with simple rules to more advanced attempts with
+    attempts that consider a much broader size of rules as compared to the basic attempt.
+
+    Inputs
+        tlds (list) : List of all valid mail top-level-domains ie. co, com, uk, e.t.c.
+        mail_servers (list) : List of all valid mail servers ie. gmail, outlook, e.t.c
+    """
+    
+    def __init__(self, tlds: list, mail_servers: list):
+
+        self.tlds = tlds
+        self.mail_servers = mail_servers
+        self.max_tld_score = 0
+        self.max_server_score = 0
+        self.correct_tld = ''
+        self.correct_server = ''
+
+    
+    def basic_attempt(self, wrong_mail: str) -> str:
+        """
+        This function handles basic attempts to correct invalid/wrong email addresses,
+        it consideres only basic email validation rules and makes necessary adjustments.
+        """
+        for tld in self.tlds:
+            tld_score = SequenceMatcher(a=wrong_mail.split('.')[-1], b=tld).quick_ratio() # Checking scores for input TLDs and list of correct TLDs
+            if tld_score > self.max_tld_score:
+                self.max_tld_score, self.correct_tld = tld_score, tld # Updating scores and correct TLD
+
+        for mail_server in self.mail_servers:
+            server_score = SequenceMatcher(a=wrong_mail.split('@')[1], b=mail_server).quick_ratio() # Checking scores for input server and list of correct servers
+            if server_score > self.max_server_score:
+                self.max_server_score, self.correct_server = server_score, mail_server
+
+        correct_mail = wrong_mail.replace(wrong_mail.split('@')[1], self.correct_server)+"."+self.correct_tld
+        return(correct_mail)
+    
+
+    def advanced_attempt(self, wrong_mail: str) -> str:
+        """
+        This function handles advanced attempts to correct invalid/wrong email addresses,
+        it consideres basic and advanced email validation rules in order to find out what
+        is wrong with an email address then makes necessary adjustments in attempt to fix it.
+        """
+        for tld in self.tlds:
+            tld_score = SequenceMatcher(a=wrong_mail.split('.')[-1], b=tld).quick_ratio() # Checking scores for input TLDs and list of correct TLDs
+            if tld_score > self.max_tld_score:
+                self.max_tld_score, self.correct_tld = tld_score, tld # Updating scores and correct TLD
+
+        for mail_server in self.mail_servers:
+            server_score = SequenceMatcher(a=wrong_mail.split('@')[1], b=tld).quick_ratio() # Checking scores for input server and list of correct servers
+            if server_score > self.max_server_score:
+                self.max_server_score, self.correct_server = server_score, mail_server
+
+        correct_mail = wrong_mail.replace(wrong_mail.split('@')[1], self.correct_server)+"."+self.correct_tld
+        return(correct_mail)
+
+
 
 
 
 if __name__ == "__main__":
     
-    mail = Mail("AutoBatch No Reply", "einsteinmunachiso@gmail.com", password, "AutoBatch Test", "google")
-    mail_define = mail.define_mail()
-    print(mail_define)
-    mail.send_same_mail(["kinfe9870@gmail.com", "einsteinmunachiso@gmail.com"], "Hello, just another test")
+    # wrong_mail = Mail("AutoBatch No Reply", "einsteinmunachiso@gmail.com", password, "AutoBatch Test", "google")
+    # mail_define = wrong_mail.define_mail()
+    # print(mail_define)
+    # wrong_mail.send_same_mail(["einsteinmunachiso@gmail.com"], "This should work well, do you see other emails?")
 
     # emails, names = ["kinfe9870@gmail.com", "abrahamogudu@gmail.com", "mosope48@gmail.com", "einsteinmunachiso@gmail.com", "ein", "dat"], ["Kinfe", "Abraham", "Mosope", "einstein", "ein", "dat"]
     # analytics = input("Display analytics? Y/n: ")
@@ -205,4 +268,11 @@ if __name__ == "__main__":
         #     print("Complete, you can now view pie chart")
         # else:
         #     print("Complete")
+    import time
 
+    wrong_mail = input("Enter incorrect email address: ")
+    print("Attempting to correct email....")
+    time.sleep(2)
+    mailc = mailCorrection(tlds, mail_servers)
+    correct_mail = mailc.basic_attempt(wrong_mail)
+    print(f"The right email should be: '{correct_mail}'")
