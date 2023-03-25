@@ -1,4 +1,5 @@
 import ssl
+import string
 import smtplib
 from config import setting # Comment this out before production.
 from email.message import EmailMessage
@@ -10,7 +11,11 @@ from difflib import SequenceMatcher
 sender_email = setting.sender 
 password = setting.password
 tlds = ['net', 'com', 'org', 'io', 'co', 'uk', 'ca', 'dev', 'me']
-mail_servers = ['outlook', 'gmail', 'icloud', 'yahoo', 'hotmail', 'aim', 'titan', 'protonmail', 'pm', 'zoho', 'yandex', 'gmx', 'hubspot', 'mail', 'tutanota']
+mail_servers = [
+    'outlook', 'gmail', 'icloud', 'yahoo', 'hotmail',
+    'aim', 'titan', 'protonmail', 'pm', 'zoho', 'yandex',
+    'gmx', 'hubspot', 'mail', 'tutanota', 'geeksforgeeks'
+    ]
 
 class Mail():
     
@@ -182,6 +187,8 @@ class mailCorrection():
         self.max_server_score = 0
         self.correct_tld = ''
         self.correct_server = ''
+        self.punctuations = string.punctuation.replace(".", "").replace('@', '')
+        self.new_mail_list = []
 
     
     def basic_attempt(self, wrong_mail: str) -> str:
@@ -189,11 +196,27 @@ class mailCorrection():
         This function handles basic attempts to correct invalid/wrong email addresses,
         it consideres only basic email validation rules and makes necessary adjustments.
         """
+
+        # Handlig punctuations in wrong positions.
+        wrong_mail_post_at = wrong_mail.split('@')[1]
+
+        for punctuation in self.punctuations:
+            if punctuation in wrong_mail_post_at:
+                wrong_mail_post_at = wrong_mail_post_at.replace(punctuation, ".").strip('.')
+
+        for mail_part in wrong_mail_post_at.split('.'):
+            if mail_part != '':
+                self.new_mail_list.append(mail_part)
+        mail = "@"+".".join(self.new_mail_list)
+        wrong_mail = wrong_mail.split('@')[0]+mail
+
+        # Handling top level domains.
         for tld in self.tlds:
             tld_score = SequenceMatcher(a=wrong_mail.split('.')[-1], b=tld).quick_ratio() # Checking scores for input TLDs and list of correct TLDs
             if tld_score > self.max_tld_score:
                 self.max_tld_score, self.correct_tld = tld_score, tld # Updating scores and correct TLD
 
+        # Handling mail servers.
         for mail_server in self.mail_servers:
             server_score = SequenceMatcher(a=wrong_mail.split('@')[1], b=mail_server).quick_ratio() # Checking scores for input server and list of correct servers
             if server_score > self.max_server_score:
@@ -268,6 +291,7 @@ if __name__ == "__main__":
         #     print("Complete, you can now view pie chart")
         # else:
         #     print("Complete")
+
     import time
 
     wrong_mail = input("Enter incorrect email address: ")
