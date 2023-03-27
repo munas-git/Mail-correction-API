@@ -13,9 +13,9 @@ sender_email = setting.sender
 password = setting.password
 tlds = ['net', 'com', 'org', 'io', 'co', 'uk', 'ca', 'dev', 'me']
 mail_servers = [
-    'outlook', 'gmail', 'icloud', 'yahoo', 'hotmail',
-    'aim', 'titan', 'protonmail', 'pm', 'zoho', 'yandex',
-    'gmx', 'hubspot', 'mail', 'tutanota', 'geeksforgeeks'
+    'outlook', 'gmail', 'icloud', 'yahoo', 'hotmail','aim',
+    'titan', 'pm', 'zoho', 'yandex', 'gmx', 'hubspot', 'mail',
+    'tutanota', 'geeksforgeeks'
     ]
 
 class Mail():
@@ -190,6 +190,7 @@ class mailCorrection():
         self.correct_server = ''
         self.punctuations = string.punctuation.replace(".", "").replace('@', '')
         self.new_mail_list = []
+        self.must_be_com = ["gmail", "outlook", "yahoo", "icloud"] # List of mail servers that must always end with .com
 
     
     def basic_attempt(self, wrong_mail: str) -> str:
@@ -224,6 +225,11 @@ class mailCorrection():
                 self.max_server_score, self.correct_server = server_score, mail_server
 
         correct_mail = wrong_mail.replace(wrong_mail.split('@')[1], self.correct_server)+"."+self.correct_tld
+        # Ensuring that gmail, outlook, icloud and yahoo mail always ends up with .com toplevel domain.
+        after_at_symbol = correct_mail.split('@')[1]
+        server = after_at_symbol.split('.')[0]
+        if server in self.must_be_com:
+            correct_mail = correct_mail.split('@')[0]+'@'+server+'.com'
         return(correct_mail)
     
 
@@ -247,7 +253,6 @@ class mailCorrection():
         return(correct_mail)
 
 
-
 class DataFrame():
     """
     This class handles all operations on dataframes i.e extracting names emails, names, e.t.c.
@@ -260,7 +265,8 @@ class DataFrame():
         
         self.data_frame = pd.read_csv(csv_data_name)
     
-    def get_mails(self):
+
+    def get_mails(self) -> list:
         """
         This function returns a list of all mails in the dataframe.
         """
@@ -269,7 +275,8 @@ class DataFrame():
             mails.append(details[0])
         return mails
     
-    def get_fnames(self):
+
+    def get_fnames(self) -> list:
         """
         This function returns a list of all first names in the dataframe.
         """
@@ -278,7 +285,8 @@ class DataFrame():
             f_names.append(details[1])
         return f_names
 
-    def get_lnames(self):
+
+    def get_lnames(self) -> list:
         """
         This function returns a list of all last names in the dataframe.
         """
@@ -295,6 +303,11 @@ last_names = df.get_lnames()
 message = """Hey _lname_, how are you doing today? trust you are doing fine"""
 for name in last_names:
     print(message.replace('_lname_', name))
+print('')
+maiL = mailCorrection(tlds, mail_servers)
+for mail in df.get_mails():
+    print("wrong:", mail)
+    print(maiL.basic_attempt(mail))
 
 
 # if __name__ == "__main__":
