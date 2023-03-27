@@ -1,6 +1,7 @@
 import ssl
 import string
 import smtplib
+import pandas as pd
 from config import setting # Comment this out before production.
 from email.message import EmailMessage
 from email.utils import formataddr
@@ -65,7 +66,7 @@ class Mail():
         return(message)
     
 
-    def send_same_mail(self, receivers_emails: list, mail_content:str):
+    def send_same_mail(self, receivers_email: str, mail_content:str):
         '''
         Same mail to all recipients sending function.
             Input:
@@ -75,7 +76,7 @@ class Mail():
             Output: login/mail status.
         '''
         # Adding receivers email and mail content to mail content build.
-        self.mail_cont["BCC"] = ", ".join(receivers_emails)
+        self.mail_cont["BCC"] = receivers_email # ", ".join(receivers_emails)
         self.mail_cont.set_content(mail_content)
 
         # Security
@@ -101,7 +102,7 @@ class Mail():
                 # Attempt to send email.
                 message = "login complete: True"
                 try:
-                    smtp.sendmail(self.senders_email, receivers_emails, self.mail_cont.as_string())
+                    smtp.sendmail(self.senders_email, receivers_email, self.mail_cont.as_string())
                     message = "mail sent: True"   
                 except Exception:
                     message = "mail sent: False"
@@ -247,56 +248,76 @@ class mailCorrection():
 
 
 
-
-
-if __name__ == "__main__":
+class DataFrame():
+    """
+    This class handles all operations on dataframes i.e extracting names emails, names, e.t.c.
     
-    # wrong_mail = Mail("AutoBatch No Reply", "einsteinmunachiso@gmail.com", password, "AutoBatch Test", "google")
-    # mail_define = wrong_mail.define_mail()
+    Input:
+        data (csv): CSV containing all emails, first and last names.
+    """
+
+    def __init__(self, csv_data_name: str) -> None:
+        
+        self.data_frame = pd.read_csv(csv_data_name)
+    
+    def get_mails(self):
+        """
+        This function returns a list of all mails in the dataframe.
+        """
+        mails = [] # List of mail_addresses.
+        for details in self.data_frame.values:
+            mails.append(details[0])
+        return mails
+    
+    def get_fnames(self):
+        """
+        This function returns a list of all first names in the dataframe.
+        """
+        f_names = [] # List of first names.
+        for details in self.data_frame.values:
+            f_names.append(details[1])
+        return f_names
+
+    def get_lnames(self):
+        """
+        This function returns a list of all last names in the dataframe.
+        """
+        l_names = [] # List of last names.
+        for details in self.data_frame.values:
+            l_names.append(details[2])
+        return l_names
+
+
+# import multiprocessing
+data = 'Mailing list.csv'
+df = DataFrame(data)
+last_names = df.get_lnames()
+message = """Hey _lname_, how are you doing today? trust you are doing fine"""
+for name in last_names:
+    print(message.replace('_lname_', name))
+
+
+# if __name__ == "__main__":
+    
+    # mail = Mail("AutoBatch No Reply", "einsteinmunachiso@gmail.com", password, "AutoBatch Test", "google")
+    # mail_define = mail.define_mail()
+    # mail.send_same_mail("einsteinmunachiso@gmail.com", 'hey')
     # print(mail_define)
-    # wrong_mail.send_same_mail(["einsteinmunachiso@gmail.com"], "This should work well, do you see other emails?")
-
+    # mail.send_same_mail(["einsteinmunachiso@gmail.com"], "This should work well, do you see other emails?")
     # emails, names = ["kinfe9870@gmail.com", "abrahamogudu@gmail.com", "mosope48@gmail.com", "einsteinmunachiso@gmail.com", "ein", "dat"], ["Kinfe", "Abraham", "Mosope", "einstein", "ein", "dat"]
-    # analytics = input("Display analytics? Y/n: ")
-    # print("Alright, sending mails to the following individuals email\n")
+    # def multi(emails, names):
+    #     for email, name in zip(emails, names):
+    #         content = f"""Hey {name}, - 3nd test.\n\nI trust this email finds you well. I am just testing how fast multprocessing makes things"""
+    #         mail.send_same_mail(email, content)
+    # multi(emails, names)
 
-    # sent = 0
-    # not_sent = 0
+    # multiprocessing.Process(target=)
 
-    # for email, name in zip(emails, names):
-    #     print(name, ":", email)
-    #     content = f"""Hey {name}, - 2nd test. NO BLOCK ABEG
-    #     \n\nI trust this email finds you well. As you are aware, the payroll window is here, and we are thrilled that you get to use our latest version - Bento V3. We are confident that Bento V3 represents our best work yet and we are excited for you to experience its awesomeness.
-    #     \n\nAs with all major deployments, there are bound to be some hitches - and there will always be risk of data corruption during a migration but we are working to fix any issues and are confident that the product is stable and will perform optimally during this payroll window.
-    #     \n\nWe moved from a 3 bedroom duplex into a waterfront mansion. A few things like our bar stools have not been delivered and we don’t know the best restaurants in the new neighborhood just yet. But we are so proud of this build and are confident that you will love it.
-    #     \n\nDig in and experience it. We’ll love to hear your thoughts. And we do ask for some patience. This was a big build - a few things were removed, some added. Happy to discuss our reasoning.
-    #     \n\nThe best products of course are an ongoing conversation between the users and builders.
-    #     \n\nBest regards,
-    #     \nEinstein from AutoBatch Team.
+    # import time
 
-        # """
-        # mail.send_same_mail(["kinfe9870@gmail.com", "einsteinmunachiso@gmail.com"], "Hello, just another test")
-
-        # send_mail = mail.send_mail(email, content)
-        # if analytics.lower() == 'y':
-        #     if send_mail == "mail sent: True":
-        #         sent += 1
-        #     else:
-        #         not_sent += 1
-        #     print("Number of sent mails:", sent)
-        #     print("Number of unsent mails:", not_sent)
-        #     import matplotlib.pyplot as plt
-        #     plt.pie([7,4,], explode=[0.02, 0.02], wedgeprops=dict(width=.55), labels=["Sent", "Unsent"], autopct='%1.1f%%');
-        #     plt.savefig("Mail Status.jpeg")
-        #     print("Complete, you can now view pie chart")
-        # else:
-        #     print("Complete")
-
-    import time
-
-    wrong_mail = input("Enter incorrect email address: ")
-    print("Attempting to correct email....")
-    time.sleep(2)
-    mailc = mailCorrection(tlds, mail_servers)
-    correct_mail = mailc.basic_attempt(wrong_mail)
-    print(f"The right email should be: '{correct_mail}'")
+    # wrong_mail = input("Enter incorrect email address: ")
+    # print("Attempting to correct email....")
+    # time.sleep(2)
+    # mailc = mailCorrection(tlds, mail_servers)
+    # correct_mail = mailc.basic_attempt(wrong_mail)
+    # print(f"The right email should be: '{correct_mail}'")
