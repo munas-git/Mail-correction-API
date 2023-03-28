@@ -76,7 +76,7 @@ class Mail():
             Output: login/mail status.
         '''
         # Adding receivers email and mail content to mail content build.
-        self.mail_cont["BCC"] = receivers_email # ", ".join(receivers_emails)
+        self.mail_cont["TO"] = receivers_email # ", ".join(receivers_emails)
         self.mail_cont.set_content(mail_content)
 
         # Security
@@ -123,11 +123,9 @@ class Mail():
                 mail_content (str) : The content of the email.
                 with_analytics (bool), default = False : This is used to tell the function if it should return information about how many mails were sent succesfully or not.
             Output: login/mail status.
-
-
         '''
         # Adding receivers email and mail content to mail content build.
-        self.mail_cont["To"] = receivers_email
+        self.mail_cont["BCC"] = receivers_email
         self.mail_cont.set_content(mail_content)
 
         # Security
