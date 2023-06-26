@@ -102,6 +102,8 @@ class Mail():
                 # Attempt to send email.
                 message = "login complete: True"
                 try:
+                    print("This is the email verify part.............")
+                    print(smtp.verify("einsteinmunachiso@gmail.com"))
                     smtp.sendmail(self.senders_email, receivers_email, self.mail_cont.as_string())
                     message = "mail sent: True"   
                 except Exception:
@@ -151,6 +153,7 @@ class Mail():
             try:
                 smtp.login(self.senders_email, self.senders_password)
                 # Attempt to send email.
+                smtp.verify
                 message = "login complete: True"
                 try:
                     smtp.sendmail(self.senders_email, receivers_email, self.mail_cont.as_string())
@@ -295,17 +298,17 @@ class DataFrame():
 
 
 # import multiprocessing
-data = 'Mailing list.csv'
-df = DataFrame(data)
-last_names = df.get_lnames()
-message = """Hey _lname_, how are you doing today? trust you are doing fine"""
-for name in last_names:
-    print(message.replace('_lname_', name))
-print('')
-maiL = mailCorrection(tlds, mail_servers)
-for mail in df.get_mails():
-    print("wrong:", mail)
-    print(maiL.basic_attempt(mail))
+# data = 'Mailing list.csv'
+# df = DataFrame(data)
+# last_names = df.get_lnames()
+# message = """Hey _lname_, how are you doing today? trust you are doing fine"""
+# for name in last_names:
+#     print(message.replace('_lname_', name))
+# print('')
+# maiL = mailCorrection(tlds, mail_servers)
+# for mail in df.get_mails():
+#     print("wrong:", mail)
+#     print(maiL.basic_attempt(mail))
 
 
 if __name__ == "__main__":
@@ -313,14 +316,14 @@ if __name__ == "__main__":
     mail = Mail("AutoBatch No Reply", "einsteinmunachiso@gmail.com", password, "AutoBatch Test", "google")
     mail_define = mail.define_mail()
     mail.send_same_mail("einsteinmunachiso@gmail.com", 'hey')
-    print(mail_define)
-    mail.send_same_mail(["einsteinmunachiso@gmail.com"], "This should work well, do you see other emails?")
-    emails, names = ["einsteinmunachiso@gmail.com", "ein", "dat"], ["einstein", "ein", "dat"]
-    def multi(emails, names):
-        for email, name in zip(emails, names):
-            content = f"""Hey {name}, - 3nd test.\n\nI trust this email finds you well. I am just testing how fast multprocessing makes things"""
-            mail.send_same_mail(email, content)
-    # multi(emails, names)
+    # print(mail_define)
+    # mail.send_same_mail(["einsteinmunachiso@gmail.com"], "This should work well, do you see other emails?")
+    # emails, names = ["einsteinmunachiso@gmail.com", "ein", "dat"], ["einstein", "ein", "dat"]
+    # def multi(emails, names):
+    #     for email, name in zip(emails, names):
+    #         content = f"""Hey {name}, - 3nd test.\n\nI trust this email finds you well. I am just testing how fast multprocessing makes things"""
+    #         mail.send_same_mail(email, content)
+    # # multi(emails, names)
 
     # multiprocessing.Process(target=)
 
