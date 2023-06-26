@@ -308,18 +308,18 @@ for mail in df.get_mails():
     print(maiL.basic_attempt(mail))
 
 
-# if __name__ == "__main__":
+if __name__ == "__main__":
     
-    # mail = Mail("AutoBatch No Reply", "einsteinmunachiso@gmail.com", password, "AutoBatch Test", "google")
-    # mail_define = mail.define_mail()
-    # mail.send_same_mail("einsteinmunachiso@gmail.com", 'hey')
-    # print(mail_define)
-    # mail.send_same_mail(["einsteinmunachiso@gmail.com"], "This should work well, do you see other emails?")
-    # emails, names = ["kinfe9870@gmail.com", "abrahamogudu@gmail.com", "mosope48@gmail.com", "einsteinmunachiso@gmail.com", "ein", "dat"], ["Kinfe", "Abraham", "Mosope", "einstein", "ein", "dat"]
-    # def multi(emails, names):
-    #     for email, name in zip(emails, names):
-    #         content = f"""Hey {name}, - 3nd test.\n\nI trust this email finds you well. I am just testing how fast multprocessing makes things"""
-    #         mail.send_same_mail(email, content)
+    mail = Mail("AutoBatch No Reply", "einsteinmunachiso@gmail.com", password, "AutoBatch Test", "google")
+    mail_define = mail.define_mail()
+    mail.send_same_mail("einsteinmunachiso@gmail.com", 'hey')
+    print(mail_define)
+    mail.send_same_mail(["einsteinmunachiso@gmail.com"], "This should work well, do you see other emails?")
+    emails, names = ["einsteinmunachiso@gmail.com", "ein", "dat"], ["einstein", "ein", "dat"]
+    def multi(emails, names):
+        for email, name in zip(emails, names):
+            content = f"""Hey {name}, - 3nd test.\n\nI trust this email finds you well. I am just testing how fast multprocessing makes things"""
+            mail.send_same_mail(email, content)
     # multi(emails, names)
 
     # multiprocessing.Process(target=)
