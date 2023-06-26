@@ -90,9 +90,18 @@ class mailCorrection():
         # List of everything after the @ symbol without extra characters or spaces.
         clean_post_at_symbol = [output for output in email_post_at_symbol.split(".") if output != '']
 
-        if len(clean_post_at_symbol) == 2:
-            print(clean_post_at_symbol)
-        if len(clean_post_at_symbol) == 3:
+        if len(clean_post_at_symbol) == 2: # regular email: @server.tld
+            for tld in self.tlds:
+                    tld_score = SequenceMatcher(a=clean_post_at_symbol[1], b=tld).quick_ratio() # Checking scores for input TLDs and list of correct TLDs
+                    if tld_score > self.max_tld_score:
+                        self.max_tld_score, self.correct_tld = tld_score, tld # Updating scores and correct TLD
+
+            for mail_server in self.mail_servers:
+                server_score = SequenceMatcher(a=clean_post_at_symbol[0], b=tld).quick_ratio() # Checking scores for input server and list of correct servers
+                if server_score > self.max_server_score:
+                    self.max_server_score, self.correct_server = server_score, mail_server
+        
+        elif len(clean_post_at_symbol) == 3: # slightly more advanced emails : @server.sponsored_tld.country_code_tld
             print(clean_post_at_symbol)  
         # for tld in self.tlds:
         #     tld_score = SequenceMatcher(a=wrong_mail.split('.')[-1], b=tld).quick_ratio() # Checking scores for input TLDs and list of correct TLDs
