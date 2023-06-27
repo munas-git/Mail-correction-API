@@ -6,6 +6,8 @@ Mail correction API is an API written in Python capable of receiving an email ad
 
 This system can be used to scan through your mailing list and instantly correct thousands of emails in order to reduce your bounce rate.
 
+> Missing functionality: Mail pinging. This functionality is to ping the corrected email address in order to verify that it actually exists.
+
 ## How to use?
 - Install all requirements in the requirements.txt file
 - Navigate to the api folder in terminal
