@@ -4,6 +4,7 @@ from mail_corrector import *
 app = FastAPI()
 mail_fixer = mailCorrection()
 
+
 @app.post("/basic-correction")
 def basic_correction(email:str):
 

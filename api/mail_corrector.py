@@ -1,14 +1,12 @@
+import pickle
 import string
 from difflib import SequenceMatcher
 punctuations = string.punctuation.replace(".", "")
 
 
-tlds = ['net', 'com', 'org', 'io', 'co', 'uk', 'ca', 'dev', 'me']
-mail_servers = [
-    'outlook', 'gmail', 'icloud', 'yahoo', 'hotmail','aim',
-    'titan', 'pm', 'zoho', 'yandex', 'gmx', 'hubspot', 'mail',
-    'tutanota', 'geeksforgeeks'
-    ]
+generic_tlds = pickle.load(open("generic_tlds.pk", "rb"))
+country_tlds = pickle.load(open("country_tlds.pk", "rb"))
+mail_servers = pickle.load(open("mail-servers.pk", "rb"))
 
 
 class mailCorrection():
@@ -25,11 +23,11 @@ class mailCorrection():
     
     def __init__(self):
 
-        self.tlds = tlds
+        self.generic_tlds = generic_tlds
         self.mail_servers = mail_servers
         self.max_tld_score = 0
         self.max_server_score = 0
-        self.correct_tld = ''
+        self.correct_generic_tld = ''
         self.correct_server = ''
         self.punctuations = string.punctuation.replace(".", "").replace('@', '')
         self.new_mail_list = []
@@ -56,10 +54,10 @@ class mailCorrection():
         wrong_mail = wrong_mail.split('@')[0]+mail
 
         # Handling top level domains.
-        for tld in self.tlds:
+        for tld in self.generic_tlds:
             tld_score = SequenceMatcher(a=wrong_mail.split('.')[-1], b=tld).quick_ratio() # Checking scores for input TLDs and list of correct TLDs
             if tld_score > self.max_tld_score:
-                self.max_tld_score, self.correct_tld = tld_score, tld # Updating scores and correct TLD
+                self.max_tld_score, self.correct_generic_tld = tld_score, tld # Updating scores and correct TLD
 
         # Handling mail servers.
         for mail_server in self.mail_servers:
@@ -67,7 +65,7 @@ class mailCorrection():
             if server_score > self.max_server_score:
                 self.max_server_score, self.correct_server = server_score, mail_server
 
-        correct_mail = wrong_mail.replace(wrong_mail.split('@')[1], self.correct_server)+"."+self.correct_tld
+        correct_mail = wrong_mail.replace(wrong_mail.split('@')[1], self.correct_server)+"."+self.correct_generic_tld
         # Ensuring that gmail, outlook, icloud and yahoo mail always ends up with .com toplevel domain.
         after_at_symbol = correct_mail.split('@')[1]
         server = after_at_symbol.split('.')[0]
@@ -89,17 +87,19 @@ class mailCorrection():
                 email_post_at_symbol = email_post_at_symbol.replace(punctuation, ".").strip('.')
         # List of everything after the @ symbol without extra characters or spaces.
         clean_post_at_symbol = [output for output in email_post_at_symbol.split(".") if output != '']
-
+        print(clean_post_at_symbol)
         if len(clean_post_at_symbol) == 2: # regular email: @server.tld
-            for tld in self.tlds:
+            for tld in self.generic_tlds:
                     tld_score = SequenceMatcher(a=clean_post_at_symbol[1], b=tld).quick_ratio() # Checking scores for input TLDs and list of correct TLDs
                     if tld_score > self.max_tld_score:
-                        self.max_tld_score, self.correct_tld = tld_score, tld # Updating scores and correct TLD
+                        self.max_tld_score, self.correct_generic_tld = tld_score, tld # Updating scores and correct TLD
 
             for mail_server in self.mail_servers:
-                server_score = SequenceMatcher(a=clean_post_at_symbol[0], b=tld).quick_ratio() # Checking scores for input server and list of correct servers
+                server_score = SequenceMatcher(a=clean_post_at_symbol[0], b=mail_server).quick_ratio() # Checking scores for input server and list of correct servers
                 if server_score > self.max_server_score:
                     self.max_server_score, self.correct_server = server_score, mail_server
+
+            correct_mail = wrong_mail.replace(wrong_mail.split('@')[1], self.correct_server)+"."+self.correct_generic_tld
         
         elif len(clean_post_at_symbol) == 3: # slightly more advanced emails : @server.sponsored_tld.country_code_tld
             print(clean_post_at_symbol)  
@@ -114,7 +114,7 @@ class mailCorrection():
         #         self.max_server_score, self.correct_server = server_score, mail_server
 
         # correct_mail = wrong_mail.replace(wrong_mail.split('@')[1], self.correct_server)+"."+self.correct_tld
-        # return(correct_mail)
+        return(correct_mail)
     
 
 def mail_active(mail: str) -> bool:
@@ -128,7 +128,8 @@ def mail_active(mail: str) -> bool:
     """
 
 m = mailCorrection()
-print(m.advanced_correction("spinalchord@hub..ng&co."))
+# spinalchord@hub..ng&co.
+print(m.advanced_correction("einstein@gmail.com"))
 
 
 # For advanced email correction attempts, consider the following
